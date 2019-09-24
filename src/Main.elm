@@ -20,10 +20,9 @@ main =
 -- In this case the model is a Record(object) with keys for
 -- What we are searching for (searchInput)
 -- And the result we get back (searchResult)
-type SearchValue = Empty | Maybe (List Article)
 
 type alias Model =
-  { searchResult: SearchValue
+  { searchResult: List Article
   , searchInput: String
   }
 
@@ -33,7 +32,7 @@ type alias Model =
 -- and we don't want to trigger any commands so use non
 init : () -> (Model, Cmd Msg)
 init _ =
-  ( Model Empty "", Cmd.none)
+  ( Model [] "", Cmd.none)
 
 
 -- These are the types of messages that can be sent to the update
@@ -55,7 +54,7 @@ update msg model =
     GotSearch result ->
       case result of
         Ok articles ->
-          ({ model | searchResult = Just articles}, Cmd.none)
+          ({ model | searchResult = articles}, Cmd.none)
         Err _ ->
           (model, Cmd.none)
 
@@ -92,8 +91,8 @@ getGuardianContent searchString =
     }
 
 type alias Article = {
-    title: String
-    ,link: String
+    webTitle: String
+    ,webUrl: String
   }
 
 articlesDecoder: Decoder (List Article)
@@ -103,5 +102,5 @@ articlesDecoder =
 articleDecoder : Decoder Article
 articleDecoder =
   map2 Article
-    (field "name" string)
-    (field "age" string)
+    (field "webTitle" string)
+    (field "webUrl" string)
