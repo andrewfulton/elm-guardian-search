@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput)
 import Http
 import Json.Decode exposing (Decoder, map2, field, string, at, list)
+-- import Debug exposing (log)
 
 -- This is mostly boilerplate and intialises the element with
 -- what we define below
@@ -24,6 +25,12 @@ main =
 type alias Model =
   { searchResult: List Article
   , searchInput: String
+  }
+
+-- The type for the Article
+type alias Article =
+  { webTitle: String
+  , webUrl: String
   }
 
 -- On initialisation we set
@@ -46,6 +53,8 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
+  -- let _ = Debug.log "articles" msg
+  -- in
   case msg of
     -- if we change the input text, update it in the model, and
     -- trigger a command to get the new search results
@@ -64,25 +73,41 @@ subscriptions: Model -> Sub Msg
 subscriptions model = Sub.none
 
 
-
+-- View. This is where we render the model to HTML
 view : Model -> Html Msg
 view model =
   div [] [
     header [] [
     h1 [] [text "Portable Guardian Search"]
-    ],
-    section [] [
+    ]
+    , section [] [
       h2 [] [text "Search"],
       label [] [ text "Enter your search terms" ],
       input [value model.searchInput, onInput ChangeText] []
-    ],
-    section [] [
+    ]
+    , section [] [
       h2 [] [text "Results"]
+      , renderArticleList model.searchResult
     ]
   ]
-  
+
+renderArticleList : List Article -> Html msg
+renderArticleList articles =
+  ul [] (List.map renderArticle articles)
+
+renderArticle: Article -> Html msg
+renderArticle article =
+  li [] [
+    a [href article.webUrl] [text article.webTitle]
+  ]    
+    
 -- HTTP
 
+-- This is triggered by the ChangeText msg being sent
+-- when the user types into the textfield.
+-- It fires of the request to the guardian API and
+-- funnels the result through the articlesDecoder to 
+-- get a list of Articles back
 getGuardianContent : String -> Cmd Msg
 getGuardianContent searchString = 
   Http.get
@@ -90,15 +115,16 @@ getGuardianContent searchString =
     , expect = Http.expectJson GotSearch articlesDecoder
     }
 
-type alias Article = {
-    webTitle: String
-    ,webUrl: String
-  }
-
+-- JSON Decoder for the search result. 
+-- this first one is the entrypoint and references
+-- down into response.results
 articlesDecoder: Decoder (List Article)
 articlesDecoder = 
-  at ["response.results"] ( list articleDecoder)
- 
+  field "response" (field "results" (list articleDecoder))
+
+-- This one uses map2 to map two(2) fields back to the Article type
+-- Needs to be in the same order as the type definition(?)
+-- If there were three fields we would need map3 
 articleDecoder : Decoder Article
 articleDecoder =
   map2 Article
