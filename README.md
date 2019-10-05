@@ -6,8 +6,12 @@ An implementation of the Guardian Search code activity in [Elm][elm]. Mostly to 
 Install Elm, according to it's instructions.  
 An API key for the [Guardian Open Platform][guardian] - update this in the `getGuardianContent` function in `Main.elm`
 
+## Build
+Run this in elm reactor OR  
+run `elm make src/Main.elm` to build an index.html  
+Currently being deployed to https://guardianelm.portable.now.sh/ with `now`
+
 ## Open questions
-[] Does the JSON decoding work? Haven't got the types to align yet to find out if it actually works at runtime...
 [] How to debounce triggering the search function
 
 
